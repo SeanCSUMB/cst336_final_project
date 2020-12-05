@@ -1,0 +1,25 @@
+<%- include('partials/header.ejs') %>
+
+        <form action="unf">
+            <lable>Leave a review:</lable><br>
+            <textarea id="itemReview" name="itemReview" rows="4" cols="50"></textarea>
+            <br><br>
+            <!--Does not do anything at the moment, but wen complete it should add the review to the database and then reload.-->
+            <input type="submit" value="Submit">
+        </form>
+        <div id="reviewscontainer">
+            Title:
+            <%= title %>
+            <br>
+            Rows:
+            <%= rows %>
+        </div>
+        <input type="hidden" id="reviewsLoader" name='<%= title %>'>
+        </main>
+
+<script> 
+$(document).ready(function() {
+    $("#reviewsLoader").click();
+});
+</script> 
+<%- include('partials/footer.ejs') %>

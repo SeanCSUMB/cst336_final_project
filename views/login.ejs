@@ -1,0 +1,19 @@
+<%- include('partials/header.ejs') %>
+
+                <form method="POST" id="loginForm">
+                    
+                    <span class="d-flex justify-content-center">Username:&nbsp <input type="text" name="username" class="input-group-text"></span>
+                    <br>
+                    <span class="d-flex justify-content-center">Password: &nbsp <input type="password" name="password" class="input-group-text"></span>
+                    <br>
+                    <button id="loginButton" class="btn btn-primary">Login!</button>
+                </form>
+                
+<%- include('partials/footer.ejs') %>
+
+<script>
+$(document).ready(async function() {
+    $("#searchForm").css("visibility", "hidden");
+    $("nav").css("visibility", "hidden");
+});
+</script> 

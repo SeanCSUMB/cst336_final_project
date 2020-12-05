@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title > NewtEgg Adventurer Reviews </title> 
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <link rel="stylesheet" href="css/styles.css">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Julius+Sans+One&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Spartan:wght@100;300&display=swap" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="js/functions.js"></script>
+        <style>
+            body {
+                background-image: url("<%= "img/background.jpg" %>");
+                background-repeat: no-repeat;
+                background-size: auto;
+                text-align: center;
+                background-color: #212121;
+            }
+        </style>
+        <script>
+        $(document).ready(function() {
+        /*global $*/
+            
+            $(document).on('keypress',function(e) {
+                if(e.which == 13) {
+                    $("#search").click();
+                }
+            });
+        });
+        </script>   
+    </head>
+    
+    <body>
+        <nav id="navigation" class="navbar navbar-expand-lg bg-transparent">
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item active">
+                    <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
+                  </li>
+                  <li class="nav-item active">
+                    <a class="nav-link" id="favLink" href="/getKeywords">My Products</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Reviews</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Profile</a>
+                  </li>
+                </ul>
+              </div>
+        </nav>
+        
+        <div id="container">
+        <main>
+            <br>
+            <div id="banner"><h1>NewtEgg </h1><a href="/"><img class="eggImage" src="img/egg.png"></a></div>
+            <br>
+            <form id="searchForm" action='/search' class="d-flex justify-content-center">
+                    <select class = "btn-primary btn-sm dropdown-toggle" id="classSelection" aria-labelledby="dropdownMenuButton">
+                        <option class="dropdown-item" value="outdoor">Choose your class</option>
+                        <option class="dropdown-item" value="outdoor">Adventurer</option>
+                        <option class="dropdown-item" value="magic">Mage</option>
+                        <option class="dropdown-item" value="archery">Archer</option>
+                        <option class="dropdown-item" value="frog">Frog</option>
+                    </select>
+                    &nbsp&nbsp
+                    <input class="input-group-text" id="searchBar" type="text" placeholder="Search for adventures..." name="keyword"/>
+                    <input type="hidden" id="classSelected" type="text" name="classSelected" value ="outdoor"/>
+                    <button id="searchButton" class="btn btn-warning">Embark</button>
+                    <br><br>
+            </form>
+
+            
