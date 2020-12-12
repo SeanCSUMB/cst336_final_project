@@ -1,0 +1,23 @@
+<%- include('partials/header.ejs') %>
+        <br>
+        <h2>My Profile</h2>
+        <div id="profileInfo"> Some profile-y stuff... </div>
+        <br>
+        <h3>Reviewed Products</h3>
+        <div id="listContainer">
+            <%
+                if (Array.isArray(rows)) {
+                    rows.forEach(function(row, i) { %>
+                        <form><input type='hidden' class='listing' id=<%=row["products_ASIN"] %> name='<%=row["products_ASIN"] %>' value=<%=row["products_ASIN"] %>></form>
+                        <div id="listLimiter">
+                                <div class="listingContainer"></div>
+                        </div>
+            <% });}%>
+        </div>
+        <input type="hidden" id="productsLoader" name="productsLoader">
+<script> 
+$(document).ready(function() {
+    $("#productsLoader").click();
+});
+</script> 
+<%- include('partials/footer.ejs') %>                            

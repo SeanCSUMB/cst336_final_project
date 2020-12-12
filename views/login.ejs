@@ -1,6 +1,10 @@
 <%- include('partials/header.ejs') %>
 
-                <form method="POST" id="loginForm">
+                <% if (typeof accountSuccess != "undefined" && accountSuccess) { %>
+                    <h3 class="error">You have sucessfully created your new account!</h3>
+                <% } %>
+
+                <form method="POST" id="loginForm" action="/loginPost">
                     
                     <span class="d-flex justify-content-center">Username:&nbsp <input type="text" name="username" class="input-group-text"></span>
                     <br>
@@ -8,6 +12,13 @@
                     <br>
                     <button id="loginButton" class="btn btn-primary">Login!</button>
                 </form>
+                
+                <% if (typeof loginError != "undefined" && loginError) { %>
+                    <h3 class="error">Wrong credentials!</h3>
+                <% } %>
+                <hr>
+                No account? Sign up <a href="/signup">here!</a>
+                <hr>
                 
 <%- include('partials/footer.ejs') %>
 

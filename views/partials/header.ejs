@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
         <title > NewtEgg Adventurer Reviews </title> 
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
         <link rel="stylesheet" href="css/styles.css">
@@ -24,7 +25,7 @@
             
             $(document).on('keypress',function(e) {
                 if(e.which == 13) {
-                    $("#search").click();
+                    $("#searchButton").click();
                 }
             });
         });
@@ -32,39 +33,27 @@
     </head>
     
     <body>
-        <nav id="navigation" class="navbar navbar-expand-lg bg-transparent">
+        <nav id="navigation" class="navbar navbar-expand bg-transparent">
               <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                   <li class="nav-item active">
                     <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
                   </li>
-                  <li class="nav-item active">
-                    <a class="nav-link" id="favLink" href="/getKeywords">My Products</a>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/allReviews">Reviewed Items</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link disabled" href="#">Reviews</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link disabled" href="#">Profile</a>
+                    <a class="nav-link" href="/profile">My Profile</a>
                   </li>
                 </ul>
               </div>
         </nav>
-        
+
         <div id="container">
         <main>
             <br>
             <div id="banner"><h1>NewtEgg </h1><a href="/"><img class="eggImage" src="img/egg.png"></a></div>
-            <br>
             <form id="searchForm" action='/search' class="d-flex justify-content-center">
-                    <select class = "btn-primary btn-sm dropdown-toggle" id="classSelection" aria-labelledby="dropdownMenuButton">
-                        <option class="dropdown-item" value="outdoor">Choose your class</option>
-                        <option class="dropdown-item" value="outdoor">Adventurer</option>
-                        <option class="dropdown-item" value="magic">Mage</option>
-                        <option class="dropdown-item" value="archery">Archer</option>
-                        <option class="dropdown-item" value="frog">Frog</option>
-                    </select>
-                    &nbsp&nbsp
                     <input class="input-group-text" id="searchBar" type="text" placeholder="Search for adventures..." name="keyword"/>
                     <input type="hidden" id="classSelected" type="text" name="classSelected" value ="outdoor"/>
                     <button id="searchButton" class="btn btn-warning">Embark</button>

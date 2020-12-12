@@ -1,25 +1,45 @@
 <%- include('partials/header.ejs') %>
 
-        <form action="unf">
+        <div id="listLimiter">
+            <div id="reviewProductListing"></div>
+        </div>
+        <form action="/newReview">
             <lable>Leave a review:</lable><br>
             <textarea id="itemReview" name="itemReview" rows="4" cols="50"></textarea>
-            <br><br>
-            <!--Does not do anything at the moment, but wen complete it should add the review to the database and then reload.-->
-            <input type="submit" value="Submit">
+            <!--The title is truncated, should be using ID instead. However, information is being passed.-->
+            <!--I think this goes unused.-->
+            <input type='hidden' id='asin' name='asin' value=<%= asin %>>
+            <input type='hidden' id='id' name='id' value=<%= id %>>
+            <br>
+            <!--Does not do anything at the moment, but when complete it should add the review to the database and then reload.-->
+            <input class="btn btn-secondary" type="submit" value="Submit">
         </form>
         <div id="reviewscontainer">
-            Title:
-            <%= title %>
             <br>
-            Rows:
-            <%= rows %>
+            <!-- https://f008b3cbfacd420894540fb237124148.vfs.cloud9.us-west-1.amazonaws.com/review?id=79 has two reviews.-->
+            <%
+                if (Array.isArray(rows)) {
+                    rows.forEach(function(row, i) { %>
+                
+                        <sub>User <strong><%=row["username"] %></strong> says...</sub>
+                        <br>
+                        <i><strong>"<%=row["reviewText"] %>"</strong></i>
+                        <br>
+                        <sub><%=row["helpfulVotes"] %> out of <%=row["helpfulVotes"] + row["unhelpfulVotes"] %> users found this review helpful.
+                        <br>
+                        <a href="/helpful?id=<%=row["idreviews"] %>&asin=<%=row["products_ASIN"] %>">&#128077;</a><a href="/unhelpful?id=<%=row["idreviews"] %>&asin=<%=row["products_ASIN"] %>">&#128078;</a>
+                        <br>
+                        <br></sub>
+                
+            <% });}%>
+            <br>
         </div>
-        <input type="hidden" id="reviewsLoader" name='<%= title %>'>
+        <input type="hidden" id="reviewsLoader" name='<%= asin %>'>
         </main>
 
 <script> 
 $(document).ready(function() {
-    $("#reviewsLoader").click();
+    $("#asin").click();
 });
 </script> 
 <%- include('partials/footer.ejs') %>
