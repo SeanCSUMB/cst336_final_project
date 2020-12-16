@@ -3,6 +3,9 @@
                 <% if (typeof accountSuccess != "undefined" && accountSuccess) { %>
                     <h3 class="error">You have sucessfully created your new account!</h3>
                 <% } %>
+                <% if (typeof deleteSuccess != "undefined" && deleteSuccess) { %>
+                    <h3 class="error">You have sucessfully deleted your account!</h3>
+                <% } %>
 
                 <form method="POST" id="loginForm" action="/loginPost">
                     
@@ -22,9 +25,4 @@
                 
 <%- include('partials/footer.ejs') %>
 
-<script>
-$(document).ready(async function() {
-    $("#searchForm").css("visibility", "hidden");
-    $("nav").css("visibility", "hidden");
-});
-</script> 
+<script src="js/login.js"></script>

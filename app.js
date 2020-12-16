@@ -20,7 +20,6 @@ app.use(express.urlencoded({extended: true}));
 
 //routes
 app.get("/", isAuthenticated, async function(req, res) {
-    let welcomeName;
     res.render("index", {"welcomeName": req.session.userLogged});
 });
 
@@ -33,34 +32,306 @@ app.listen(process.env.PORT, process.env.IP, function() {
 
 //////////////// Reviews code //////////////////
 
-//Currently not completely functional.
-app.get("/allReviews", isAuthenticated, function(req, res) {
+//Internal API...
+app.get("/reviewAPI", async function(req, res) {
   
-  let sql = "SELECT DISTINCT products_ASIN FROM reviews";
+  //Set this to false to leave as many reviews as you like.
+  let debugOff = false;
+  
+  //Debug
+  console.log("Review API says user logged in is " + req.session.userLogged);
+  console.log("Review API says is authenticated is " + (typeof(req.session.userLogged) != "undefined"));
+  
+  //If a user is logged in...
+  if (typeof(req.session.userLogged) != "undefined") {
+  
+    //Debug
+    console.log("Review API says " + req.query.id);
+    console.log("Review API says " + req.query.asin);
+    
+    let id = req.query.id;
+    let asin = req.param('asin');
+    let username = req.query.username;
+    
+    //Get all of the reviews from this user.
+    let sql = "SELECT * FROM reviews WHERE users_userID = (SELECT userID from users WHERE username = ?)";
+    let params = [username];
+    sql = mysql.format(sql, params);
+    //Query the database.
+    pool.query(sql, function(err, rows, fields) {
+    
+      //If there was an error, throw one.
+      if (err) throw err;
+      
+      //If the select statement returned anything and debug mode is off...
+      if (rows && debugOff) {
+        
+        //Log that the user already left a review.
+        console.log("Already left review...");
+        
+      //End of if.
+      }
+      
+      //Otherwise...
+      else {
+        
+        //Log that the user attempted to leave a review.
+        console.log("Attempted to leave review! Text is " + req.query.itemReview);
+  
+        //Insert the review information into the reviews table.
+        sql = "INSERT INTO reviews (idreviews, reviewText, products_productID, users_userID, products_ASIN, rating) VALUES (DEFAULT, ?, ?, (SELECT userID from users WHERE users.username = ?), ?, ?)";
+        params = [req.query.itemReview, id, username, asin, req.query.rating];
+        sql = mysql.format(sql, params);
+        //Query the database.
+        pool.query(sql, function(err, rows) {
+    
+          //If there is an error, throw one.
+          if (err) throw err;
+          res.send("OK");
+    
+        //End of query.
+        });
+        
+      //End of else.  
+      }
+    
+    //End of query.
+    });
+  
+  //End of if.
+  }
+  
+  else {
+    
+    res.send("NotOK");
+    
+  }
 
-  pool.query(sql, function(err, rows, fields) {
-  
-    if (err) throw err;
-    console.log(rows);
-    if (rows == "") {
-    
-      //Some other value may work.
-      res.render("allReviews", {"rows" : rows});
-    
-    }
-  
-    else {
-    
-      res.render("allReviews", {"rows" : rows});
-    
-    }
-  
-  });
-  
+//End of this API.
 });
 
-//I am unsure whethere we need a whole route for this.
-app.get("/helpful", function(req, res) {
+//Route for the page that contains all reviewed products.
+app.get("/allReviews", isAuthenticated, function(req, res) {
+  
+  //Select all distinct products ASINs from the reviews table.
+  let sql = "SELECT DISTINCT products_ASIN FROM reviews";
+
+  //Query the database.
+  pool.query(sql, function(err, rows, fields) {
+  
+    //Throw an error if there is an error.
+    if (err) throw err;
+    //Print the returned rows to the console.
+    console.log(rows);
+    //Then render the allReviews page with the returned rows.
+    res.render("allReviews", {"rows" : rows});
+  
+  //End of pool.query
+  });
+
+//End of route.
+});
+
+//Route for an individual product's review page.
+app.get('/review', function (req, res) {
+  
+  //Debug.
+  console.log("User logged in is " + req.session.userLogged);
+  console.log("Is authenticated is " + (typeof(req.session.userLogged) != "undefined"));
+  
+  //Set id and ASIN.
+  let id = "";
+  if (req.query.id) {
+     
+      id = req.query.id;
+     
+  }
+   
+  if (id == "") {
+     
+      //or other dummy value
+      id = -1;
+     
+  }
+  
+  let asin = "";
+  if (req.param('asin')) {
+    
+    asin = req.param('asin');
+    
+  }
+  
+  //If the user is trying to access a page for a product that does not exist (which should never happen)...
+  if (asin == "") {
+     
+      //Redirect them.
+      res.redirect("allReviews");
+     
+  }
+  
+  //Debug
+  console.log("id is " + id + " and asin is " + asin);
+  
+  //Select everything from the users joined with the reviews of the products with this ASIN.
+  let sql = "SELECT * FROM users RIGHT OUTER JOIN reviews ON users.userID = reviews.users_userID WHERE reviews.products_ASIN = ?";
+  let params = [asin];
+  sql = mysql.format(sql, params);
+  //Query the database.
+  pool.query(sql, function(err, rows, fields) {
+    
+    //If there is an error, throw one.
+    if (err) throw err;
+    //Log the returned rows.
+    console.log(rows);
+    //Log whether something was returned or not.
+    console.log(Object.keys(rows).length === 0);
+    
+    //If there are no reviews...
+    if (Object.keys(rows).length === 0) {
+      
+      //Render the review page with a rows that does nothing and everything else as appropriate.
+      res.render("review", {"rows" : "It looks like there are no reviews for this product yet.", "id" : id, "asin" : asin, "username" : req.session.userLogged});
+      
+    //End of if.
+    }
+    
+    //Otherwise (if there are reviews)...
+    else {
+      
+      //Render the review page with all of those reviews and everything else as appropriate.
+      res.render("review", {"rows" : rows, "id" : id, "asin" : asin, "username" : req.session.userLogged});
+     
+    //End of else. 
+    }
+    
+  //End of query.
+  });
+    
+//End of route.
+});
+
+//Route for when a user leaves a new review.
+/*app.get("/newReview", function(req, res) {
+  
+  //Set this to false to leave as many reviews as you like.
+  let debugOff = false;
+  
+  //Debug
+  console.log("User logged in is " + req.session.userLogged);
+  console.log("Is authenticated is " + (typeof(req.session.userLogged) != "undefined"));
+  
+  //If a user is logged in...
+  if (typeof(req.session.userLogged) != "undefined") {
+  
+    //Debug
+    console.log(req.query.id);
+    console.log(req.query.asin);
+    
+    //Set id, asin, and username.
+    let id = "";
+    if (req.query.id) {
+     
+        id = req.query.id;
+     
+    }
+   
+    if (id == "") {
+     
+        //or other dummy value
+        id = -1;
+     
+    }
+    
+    let asin = "";
+    if (req.param('asin')) {
+    
+      asin = req.param('asin');
+    
+    }
+  
+    //If the user is reviewing a product with no ASIN (which should never happen)...
+    if (asin == "") {
+     
+      //Redirect them.
+      res.redirect("allReviews");
+     
+    }
+    
+    let username = "";
+    if (req.query.username) {
+     
+        username = req.query.username;
+     
+    }
+   
+    //If there is no username (which should never happen)...
+    if (username == "") {
+     
+        //Put in a dummy value.
+        username = "johndoe";
+     
+    }
+    
+    //Get all of the reviews from this user.
+    let sql = "SELECT * FROM reviews WHERE users_userID = (SELECT userID from users WHERE username = '" + username + "')";
+    //Query the database.
+    pool.query(sql, function(err, rows, fields) {
+    
+      //If there was an error, throw one.
+      if (err) throw err;
+      
+      //If the select statement returned anything and debug mode is off...
+      if (rows && debugOff) {
+        
+        //Log that the user already left a review.
+        console.log("Already left review...");
+        
+      //End of if.
+      }
+      
+      //Otherwise...
+      else {
+        
+        //Log that the user attempted to leave a review.
+        console.log("Attempted to leave review! Text is " + req.query.itemReview);
+  
+        //Insert the review information into the reviews table.
+        sql = "INSERT INTO reviews (idreviews, helpfulVotes, unhelpfulVotes, reviewText, products_productID, users_userID, products_ASIN, rating) VALUES (DEFAULT, 0, 0, '" + req.query.itemReview + "', " + id + ", (SELECT userID from users WHERE users.username = '" + username + "'), '" + asin + "', " + req.query.rating + ")";
+        //Query the database.
+        pool.query(sql, function(err) {
+    
+          //If there is an error, throw one.
+          if (err) throw err;
+    
+        //End of query.
+        });
+        
+      //End of else.  
+      }
+      
+      //Redirect the user.
+      res.redirect("/review?asin=" + asin);
+    
+    //End of query.
+    });
+  
+  //End of if.
+  }
+  
+  //Otherwise (that is, if there is no user logged in)...
+  else {
+    
+    //Rebder the login page.
+    res.render("login");
+    
+  //End of else.
+  }
+  
+//End of route.
+});*/
+
+//Can be removed once the other version is double checked.
+/*app.get("/helpful", function(req, res) {
   
   console.log("ID is " + req.param('id'));
   console.log("ASIN is " + req.param('asin'));
@@ -81,7 +352,7 @@ app.get("/helpful", function(req, res) {
   let asin = "";
   if (req.param('asin')) {
     
-    id = req.param('asin');
+    asin = req.param('asin');
     
   }
   
@@ -92,8 +363,12 @@ app.get("/helpful", function(req, res) {
      
   }
   
-  if (typeof(req.session.userLogged) != "undefined") {
+  console.log("Before main process...");
+  
+  //Debugging...
+  if (typeof(req.session.userLogged) != "undefined" && !req.session.votedItems.includes(id)) {
     
+    console.log("In if...");
     let sql = "UPDATE reviews SET helpfulVotes = helpfulVotes + 1 WHERE reviews.idreviews = " + id;
     pool.query(sql, function(err) {
     
@@ -101,35 +376,11 @@ app.get("/helpful", function(req, res) {
     
     });
     
-    res.redirect("/review?asin=" + asin);
-  
-    //This code should be removed before submission, it is only here for posterity and in case something buggy happens.
-    /*sql = "SELECT * FROM reviews WHERE reviews.products_ASIN = " + asin;
-    pool.query(sql, function(err, rows, fields) {
-    
-      if (err) throw err;
-      console.log(rows);
-      if (rows == "") {
-      
-        res.render("review", {"rows" : "It looks like there are no reviews for this product yet.", "id" : id, "asin" : asin});
-      
-      }
-    
-      else {
-      
-        res.render("review", {"rows" : rows, "id" : id, "asin" : asin});
-      
-      }
-    
-    });*/
-  
-  }
-  
-  else {
-    
-    res.render("login");
+    req.session.votedItems.push(id);
     
   }
+  
+  res.redirect("/review?asin=" + asin);
   
 });
 
@@ -155,140 +406,6 @@ app.get("/unhelpful", function(req, res) {
   let asin = "";
   if (req.param('asin')) {
     
-    id = req.param('asin');
-    
-  }
-  
-  if (asin == "") {
-     
-      //Don't actually return, the page will be stuck in limbo. Just render the previous page.
-      return;
-     
-  }
-  
-  if (typeof(req.session.userLogged) != "undefined") {
-    
-    let sql = "UPDATE reviews SET unhelpfulVotes = unhelpfulVotes + 1 WHERE reviews.idreviews = " + id;
-    pool.query(sql, function(err) {
-    
-      if (err) throw err;
-    
-    });
-    
-    res.redirect("/review?asin=" + asin);
-  
-    //This code should be removed before submission, it is only here for posterity and in case something buggy happens.
-    /*sql = "SELECT * FROM reviews WHERE reviews.products_ASIN = " + asin;
-    pool.query(sql, function(err, rows, fields) {
-    
-      if (err) throw err;
-      console.log(rows);
-      if (rows == "") {
-      
-        res.render("review", {"rows" : "It looks like there are no reviews for this product yet.", "id" : id, "asin" : asin});
-      
-      }
-    
-      else {
-      
-        res.render("review", {"rows" : rows, "id" : id, "asin" : asin});
-      
-      }
-    
-    });*/
-  
-  }
-  
-  else {
-    
-    res.render("login");
-    
-  }
-  
-});
-
-app.get("/newReview", function(req, res) {
-  
-  //Debug
-  console.log("User logged in is " + req.session.userLogged);
-  console.log("Is authenticated is " + (typeof(req.session.userLogged) != "undefined"));
-  
-  //isAuthenticated does not halt function() here, so we must manually check.
-  if (typeof(req.session.userLogged) != "undefined") {
-  
-    console.log(req.query.id);
-    console.log(req.query.asin);
-    let id = "";
-    if (req.query.id) {
-     
-        id = req.query.id;
-     
-    }
-   
-    if (id == "") {
-     
-        //or other dummy value
-        id = -1;
-     
-    }
-    
-    let asin = "";
-    if (req.param('asin')) {
-    
-      asin = req.param('asin');
-    
-    }
-  
-    if (asin == "") {
-     
-      console.log("here");
-      //Don't actually return, the page will be stuck in limbo. Just render the previous page.
-      return;
-     
-    }
-  
-    console.log("Attempted to leave review! Text is " + req.query.itemReview);
-  
-    //Needs to be updated to use userid.
-    let sql = "INSERT INTO reviews (idreviews, helpfulVotes, unhelpfulVotes, reviewText, products_productID, users_userID, products_ASIN) VALUES (DEFAULT, 0, 0, '" + req.query.itemReview + "', " + id + ", 0, '" + asin + "')";
-    pool.query(sql, function(err) {
-    
-      if (err) throw err;
-    
-    });
-    
-    res.redirect("/review?asin=" + asin);
-  
-  }
-  
-  else {
-    
-    res.render("login");
-    
-  }
-  
-  
-});
-
-app.get('/review', function (req, res) {
-  
-  let id = "";
-  if (req.query.id) {
-     
-      id = req.query.id;
-     
-  }
-   
-  if (id == "") {
-     
-      //or other dummy value
-      id = -1;
-     
-  }
-  
-  let asin = "";
-  if (req.param('asin')) {
-    
     asin = req.param('asin');
     
   }
@@ -300,30 +417,111 @@ app.get('/review', function (req, res) {
      
   }
   
-  console.log("id is " + id + " and asin is " + asin);
+  if (typeof(req.session.userLogged) != "undefined" && !req.session.votedItems.includes(id)) {
+    
+    let sql = "UPDATE reviews SET unhelpfulVotes = unhelpfulVotes + 1 WHERE reviews.idreviews = " + id;
+    pool.query(sql, function(err) {
+    
+      if (err) throw err;
+    
+    });
+    
+    req.session.votedItems.push(id);
+    
+    res.redirect("/review?asin=" + asin);
   
-  let sql = "SELECT * FROM users RIGHT OUTER JOIN reviews ON users.userID = reviews.users_userID WHERE reviews.products_ASIN = '" + asin + "';"
-  pool.query(sql, function(err, rows, fields) {
+  }
+  
+  else {
     
+    res.redirect("/review?asin=" + asin);
+    //res.render("login");
+    
+  }
+  
+});*/
+
+//Internal API...
+/*app.get("/voteapi", async function(req, res) {
+  
+  //A vairable for the SQL.
+  let sql;
+  
+  //Switch on whether the user voted helpful or unhelpful.
+  switch (req.query.vote) {
+    
+    //If they voted helpful...
+    case "helpful":
+      
+      //Switch on whether they are adding or removing their vote...
+      switch (req.query.action) {
+        
+        //If they are adding one...
+        case "add":
+          
+          //Update the SQL accordingly.
+          sql = "UPDATE reviews SET helpfulVotes = helpfulVotes + 1 WHERE reviews.idreviews = " + req.query.id;
+          //And break.
+          break;
+          
+        //If they are removing one...
+        case "remove":
+          
+          //Update the SQL accordingly.
+          sql = "UPDATE reviews SET helpfulVotes = helpfulVotes - 1 WHERE reviews.idreviews = " + req.query.id;
+          //And break.
+          break;
+      
+      //End of switch.
+      }
+      
+      //And break.
+      break;
+      
+    //If they voted unhelpful...
+    case "unhelpful":
+      
+      //Switch on whether they are adding or removing their vote...
+      switch (req.query.action) {
+        
+        //If they are adding one...
+        case "add":
+          
+          //Update the SQL accordingly.
+          sql = "UPDATE reviews SET unhelpfulVotes = unhelpfulVotes + 1 WHERE reviews.idreviews = " + req.query.id;
+          //And break.
+          break;
+          
+        //If they are removing one...
+        case "remove":
+          
+          //Update the SQL accordingly.
+          sql = "UPDATE reviews SET unhelpfulVotes = unhelpfulVotes - 1 WHERE reviews.idreviews = " + req.query.id;
+          //And break.
+          break;
+      
+      //End of switch.
+      }
+      
+      //And break.
+      break;
+      
+  //End of switch.
+  }
+  
+  //Query the database.
+  pool.query(sql, function (err, rows, fields) {
+    
+    //If there is an error, throw one.
     if (err) throw err;
-    console.log(rows);
-    //Log whether something was returned or not.
-    console.log(Object.keys(rows).length === 0);
-    if (Object.keys(rows).length === 0) {
-      
-      res.render("review", {"rows" : "It looks like there are no reviews for this product yet.", "id" : id, "asin" : asin});
-      
-    }
+    //Send the affected rows back as a string.
+    res.send(rows.affectedRows.toString());
     
-    else {
-      
-      res.render("review", {"rows" : rows, "id" : id, "asin" : asin});
-      
-    }
-    
+  //End of query.
   });
-    
-});
+
+//End of this API.
+});*/
 
 //////////////// Products code //////////////////
 
@@ -380,23 +578,6 @@ app.get("/search", isAuthenticated, async function(req, res) {
     res.render("results", {"keyword":keyword});
 }); 
 
-app.get("/api/updateDatabase", function(req, res){
-  let sql;
-  let sqlParams;
-  switch (req.query.action) {
-    case "add": sql = "INSERT IGNORE INTO products (asin, imageUrl, keyword, title, price, url) VALUES (?,?,?,?,?,?)";
-                sqlParams = [req.query.asin, req.query.keyword, req.query.title, req.query.price, req.query.url, req.query.asin];
-                break;
-    case "delete": sql = "DELETE FROM products WHERE asin = ?";
-                sqlParams = [req.query.asin];
-                break;
-  }//switch
-  pool.query(sql, sqlParams, function (err, rows, fields) {
-    if (err) throw err;
-    res.send(rows.affectedRows.toString());
-  });
-});//api/updateDatabase
-
 //the main api for retrieving products from the database
 app.get("/api/getItems", function(req, res){
   let sql;
@@ -452,11 +633,16 @@ app.get("/api/getItems", function(req, res){
 // the middleware isAuthenticated (i.e. app.get("/page", isAuthenticated, function(req, res){}); ) can check if a user is logged in
 
 //NEW ROUTE STARTER BY JOSH - FEEL FREE TO DO WHATEVER YOU LIKE WITH IT
-app.get("/profile", function(req, res) {
+app.get("/profile", isAuthenticated, async function(req, res) {
   
-  let username = 1; //need to replace this with whatever req.session value will give the current username logged in
+  let username = req.session.userLogged; //need to replace this with whatever req.session value will give the current username logged in
+  
+  let idResult = await checkUsername(username);
+  console.dir(idResult);
+  let userId = idResult[0].userID;
+  
   let sql = "SELECT DISTINCT products_ASIN FROM reviews WHERE users_userID = ?";
-  let sqlParams = [username]; 
+  let sqlParams = [userId]; 
   
   console.log("username: " + username);
 
@@ -467,13 +653,13 @@ app.get("/profile", function(req, res) {
     if (rows == "") {
     
       //Some other value may work.
-      res.render("profile", {"rows" : rows});
+      res.render("profile", {"rows" : rows, "currentUsername": username});
     
     }
   
     else {
     
-      res.render("profile", {"rows" : rows});
+      res.render("profile", {"rows" : rows, "currentUsername": username});
     
     }
   
@@ -484,14 +670,19 @@ app.get("/profile", function(req, res) {
 //when the user attempts to log in
 app.get("/login", function(req, res){
     //uncomment the following three lines to have the user be auto logged in, to save time while testing
-    //req.session.userLogged = "test";
+    //req.session.userLogged = "admin";
     //res.redirect("/");
     //return;
   
     res.render("login");
 });
 
+//you shoud not be able to access this page directly, so it redirects you back to the home page
+app.get("/passResult", function(req, res){
+    res.redirect("/");
+});
 
+//when the user submits the form to log in
 app.post("/loginPost", async function(req, res){
     console.log(req.session.authenticated);
     let username = req.body.username;
@@ -513,8 +704,7 @@ app.post("/loginPost", async function(req, res){
     
     if (passwordMatch) {
         req.session.userLogged = username;
-        req.session.save();
-        //console.log(req.session.authenticated);
+        req.session.votedItems = [];
         
         console.log("User logged in is " + req.session.userLogged);
         console.log("Is authenticated is " + (typeof(req.session.userLogged) != "undefined"));
@@ -523,7 +713,6 @@ app.post("/loginPost", async function(req, res){
     }else{
         res.render("login", {"loginError":true});
     }
-    //console.log(req.session.authenticated);
 });
 
 app.get("/signup", function(req, res){
@@ -534,6 +723,8 @@ app.get("/signup", function(req, res){
 app.post("/makeNewAccount", async function(req, res){
     let username = req.body.username;
     let password = req.body.password;
+    let retypePassword = req.body.retypePassword;
+    
     if(username == "" || password == ""){
         res.render("signup", {"emptyError":true});
         return;
@@ -542,6 +733,11 @@ app.post("/makeNewAccount", async function(req, res){
     console.dir(result);
     if (result.length > 0){
         res.render("signup", {"existsError":true});
+        return;
+    }
+    
+    if (password != retypePassword){
+        res.render("signup", {"retypeError":true});
         return;
     }
     
@@ -555,6 +751,53 @@ app.post("/makeNewAccount", async function(req, res){
         console.log(rows);
   });
   res.render("login", {"accountSuccess":true});
+});
+
+//to change the current user's password
+app.post("/changePassword", async function(req, res){
+    let oldPass = req.body.currentPassword;
+    let newPass = req.body.newPassword;
+    let newPass2 = req.body.retypeNewPassword;
+    let username = req.session.userLogged
+    
+    if(oldPass == "" || newPass == "" || newPass2 == ""){
+      //not all fields are filled in
+        res.render("passResult", {"emptyError": true});
+        return;
+    }
+    let result = await checkUsername(username);
+    console.dir(result);
+    if (result.length <= 0){
+      //the currently logged in user is not in the datbase
+        res.render("passResult", {"notExistsError":true});
+        return;
+    }
+    let hashedPwd = result[0].password;
+    let passwordMatch = await checkPassword(oldPass, hashedPwd);
+    console.log("passwordMatch:" + passwordMatch);
+    
+    if (!passwordMatch) {
+      //current password does not match the one on the database
+      res.render("passResult", {"oldError":true});
+      return;
+    }
+    
+    if (newPass != newPass2){
+      //password and retype password do not match
+        res.render("signup", {"retypeError":true});
+        return;
+    }
+    
+    let newHashedPwd = await hashPassword(newPass);
+    
+    let sql = "UPDATE users SET password = ? WHERE username = ?";
+    let sqlParams = [newHashedPwd, username];
+    
+    pool.query(sql, sqlParams, function (err, rows, fields) {
+        if (err) throw err;
+        console.log(rows);
+  });
+  res.render("passResult", {"changeSuccess":true});
 });
 
 //destroy the current session if the user logs out    

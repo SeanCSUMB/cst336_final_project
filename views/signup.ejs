@@ -1,12 +1,14 @@
 <%- include('partials/header.ejs') %>
-        Sign up! (test)
+        Sign up here!
         
         <form method="POST" action="/makeNewAccount">
             Username:<input type="text" name="username">
             <br>
             Password: <input type="password" name="password">
             <br>
-            <button>Sign up!</button>
+            Retype Password: <input type="password" name="retypePassword">
+            <br>
+            <button class="btn btn-primary">Sign up!</button>
         </form>
         
         <% if (typeof existsError != "undefined" && existsError) { %>
@@ -15,12 +17,9 @@
         <% if (typeof emptyError != "undefined" && emptyError) { %>
         <h3 class="error">You must fill in both fields!</h3>
         <% } %>
+        <% if (typeof retypeError != "undefined" && retypeError) { %>
+        <h3 class="error">Password and Retype Password must match!</h3>
+        <% } %>
         
 <%- include('partials/footer.ejs') %>
-
-<script>
-$(document).ready(async function() {
-    $("#searchForm").css("visibility", "hidden");
-    $("nav").css("visibility", "hidden");
-});
-</script> 
+<script src="js/signup.js"></script>

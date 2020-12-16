@@ -10,26 +10,6 @@
         <link href="https://fonts.googleapis.com/css2?family=Spartan:wght@100;300&display=swap" rel="stylesheet">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="js/functions.js"></script>
-        <style>
-            body {
-                background-image: url("<%= "img/background.jpg" %>");
-                background-repeat: no-repeat;
-                background-size: auto;
-                text-align: center;
-                background-color: #212121;
-            }
-        </style>
-        <script>
-        $(document).ready(function() {
-        /*global $*/
-            
-            $(document).on('keypress',function(e) {
-                if(e.which == 13) {
-                    $("#searchButton").click();
-                }
-            });
-        });
-        </script>   
     </head>
     
     <body>
@@ -37,13 +17,13 @@
               <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                   <li class="nav-item active">
-                    <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
+                    <a class="nav-link" href="/"><button class="btn btn-primary">Home</button><span class="sr-only"></span></a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="/allReviews">Reviewed Items</a>
+                    <a class="nav-link" href="/allReviews"><button class="btn btn-primary">Reviewed Items</button></a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="/profile">My Profile</a>
+                    <a class="nav-link" href="/profile"><button class="btn btn-primary">My Profile</button></a>
                   </li>
                 </ul>
               </div>
@@ -55,7 +35,6 @@
             <div id="banner"><h1>NewtEgg </h1><a href="/"><img class="eggImage" src="img/egg.png"></a></div>
             <form id="searchForm" action='/search' class="d-flex justify-content-center">
                     <input class="input-group-text" id="searchBar" type="text" placeholder="Search for adventures..." name="keyword"/>
-                    <input type="hidden" id="classSelected" type="text" name="classSelected" value ="outdoor"/>
                     <button id="searchButton" class="btn btn-warning">Embark</button>
                     <br><br>
             </form>

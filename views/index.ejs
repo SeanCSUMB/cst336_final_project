@@ -1,12 +1,6 @@
 <%- include('partials/header.ejs') %>
 
-<br>Welcome, <%= welcomeName %>!<br>
+<br><h2>Welcome, <%= welcomeName %>!</h2><br>
 
 <%- include('partials/footer.ejs') %>
-    
-<script>
-$(document).ready(async function() {
-    $("#searchForm").css("visibility", "visible");
-    $("#navigation").css("visibility", "visible");
-});
-</script> 
+<script src="js/index.js"></script>

@@ -1,10 +1,25 @@
 <%- include('partials/header.ejs') %>
         <br>
-        <h2>My Profile</h2>
-        <div id="profileInfo"> Some profile-y stuff... </div>
+        <h2><%= currentUsername %>'s Profile</h2>
+        <section id="profileInfo">
+            <hr>
+                
+            <a href="/logout"><button class="btn btn-primary">Logout</button></a>
+                
+            <hr><h3>Change Password:</h3><br><br>
+            <form method="POST" action="/changePassword">
+                <span class="d-flex justify-content-center">Current Password: &nbsp<input type="password" name="currentPassword" class="input-group-text"></span>
+                <br>
+                <span class="d-flex justify-content-center">New Password: &nbsp<input type="password" name="newPassword" class="input-group-text"></span>
+                <br>
+                <span class="d-flex justify-content-center">Retype New Password: &nbsp<input type="password" name="retypeNewPassword" class="input-group-text"></span>
+                <br>
+                <button class="btn btn-primary">Change Password!</button>
+            </form>
+        </section>
         <br>
         <h3>Reviewed Products</h3>
-        <div id="listContainer">
+        <section id="listContainer">
             <%
                 if (Array.isArray(rows)) {
                     rows.forEach(function(row, i) { %>
@@ -13,11 +28,10 @@
                                 <div class="listingContainer"></div>
                         </div>
             <% });}%>
-        </div>
+            <% if (rows.length == 0) { %>
+                    <h3 class="error">You have not yet made any reviews!</h3>
+            <% } %>
+        </section>
         <input type="hidden" id="productsLoader" name="productsLoader">
-<script> 
-$(document).ready(function() {
-    $("#productsLoader").click();
-});
-</script> 
 <%- include('partials/footer.ejs') %>                            
+<script src="js/profile.js"></script>

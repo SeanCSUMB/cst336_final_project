@@ -4,21 +4,15 @@
             <%
                 if (Array.isArray(rows)) {
                     rows.forEach(function(row, i) { %>
-                        <sub>ASIN(do we need this? - Josh): <%=row["products_ASIN"] %></sub>
                         <form><input type='hidden' class='listing' id=<%=row["products_ASIN"] %> name='<%=row["products_ASIN"] %>' value=<%=row["products_ASIN"] %>></form>
                         <div id="listLimiter">
-                                <div class="listingContainer"></div>
-                            </div>
+                                <div class="listingContainer" id="itemInstance"></div>
+                        </div>
                 
             <% });}%>
         </div>
         <input type="hidden" id="productsLoader" name="productsLoader">
     </main>
-<script> 
-$(document).ready(async function() {
-    
-    $("#productsLoader").click();
-    
-});
-</script>
+
 <%- include('partials/footer.ejs') %>
+<script src="js/allReviews.js"></script>
