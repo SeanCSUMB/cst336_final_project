@@ -42,7 +42,7 @@ app.get("/reviewAPI", async function(req, res) {
   //If a user is logged in...
   if (typeof(req.session.userLogged) != "undefined") {
     
-    //All of these will always return something if the above condition is true, so there is no need to check. Even if the user leaves no text in the box, they should be allowed to rate the item 5 stars if they choose.
+    //All of these will always return something if the above condition is true, so there is no need to verify. Even if the user leaves no text in the box, they should be allowed to rate the item 5 stars if they choose.
     let asin = req.param('asin');
     let username = req.query.username;
     let review = req.query.itemReview;
