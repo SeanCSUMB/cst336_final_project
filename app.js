@@ -42,10 +42,29 @@ app.get("/reviewAPI", async function(req, res) {
   //If a user is logged in...
   if (typeof(req.session.userLogged) != "undefined") {
     
-    //All of these will always return something if the above condition is true, so there is no need to verify. Even if the user leaves no text in the box, they should be allowed to rate the item 5 stars if they choose.
+    //Get the ASIN.
     let asin = req.param('asin');
+    //If the user is trying to access a page for a product that does not exist (which should never happen)...
+    if (asin == "") {
+     
+        //Redirect them.
+        res.redirect("allReviews");
+     
+    }
+    
+    //Get the username.
     let username = req.query.username;
+    //If the user has a nonexistent username...
+    if (asin == "") {
+     
+        //Redirect them.
+        res.redirect("allReviews");
+     
+    }
+    
+    //Get the review text. It is fine if it does not exist.
     let review = req.query.itemReview;
+    //Get the rating. It will always exist.
     let rating = req.query.rating;
     
     //Get all of the reviews from this user for this item.
@@ -86,6 +105,7 @@ app.get("/reviewAPI", async function(req, res) {
     
           //If there is an error, throw one.
           if (err) throw err;
+          //Send response.
           res.send("OK");
     
         //End of query.
@@ -113,7 +133,7 @@ app.get("/reviewAPI", async function(req, res) {
 });
 
 //Route for the page that contains all reviewed products.
-app.get("/allReviews", isAuthenticated, function(req, res) {
+app.get("/allReviews", function(req, res) {
   
   //Select all distinct products ASINs from the reviews table.
   let sql = "SELECT DISTINCT products_ASIN FROM reviews";
@@ -135,12 +155,16 @@ app.get("/allReviews", isAuthenticated, function(req, res) {
 //Route for an individual product's review page.
 app.get('/review', function (req, res) {
   
-  //Set ASIN.
+  //Let ASIN.
   let asin = "";
+  
+  //As long as the parameter asin exists...
   if (req.param('asin')) {
     
+    //Set the asin.
     asin = req.param('asin');
     
+  //End of if.
   }
   
   //If the user is trying to access a page for a product that does not exist (which should never happen)...
@@ -148,7 +172,8 @@ app.get('/review', function (req, res) {
      
       //Redirect them.
       res.redirect("allReviews");
-     
+  
+  //End of if.   
   }
   
   //Select everything from the users joined with the reviews of the products with this ASIN.
@@ -191,7 +216,7 @@ app.get('/review', function (req, res) {
 
 //////////////// Products code //////////////////
 
-app.get("/search", isAuthenticated, async function(req, res) {
+app.get("/search", async function(req, res) {
     
     let keyword = "";
     if (req.query.keyword) {

@@ -5,13 +5,29 @@ $(document).ready(function(){
     
     $(document).on('keypress',function(e) {
         
-        if(e.which == 13) {
+        if(e.which == 13 && $("#searchBar").val() != "") {
             
             $("#searchButton").click();
             
         }
         
+        if(e.which == 13 && $("#itemReview").val() != "") {
+            
+            $("#reviewSubmit").click();
+        }
+        
     });
+    
+    async function validateSearchForm() {
+        if ($("#searchBar").val() == "") {
+            $("#searchBar").css("border", "1px solid red");
+            returnToPreviousPage();
+            return false;
+        } else {
+            $("#searchBar").css("border", "1px solid gray");
+            return true;
+        }
+    }
     
     //Populate all results when results page is loaded (page load clicks the resultsLoader button)
     $("#resultsLoader").on("click", async function(){
