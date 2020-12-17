@@ -4,21 +4,24 @@
         <section id="listLimiter">
             <div id="reviewProductListing"></div>
         </section>
-        <form id="reviewForm">
-            <lable>Leave a review:</lable><br>
+        <form id="reviewForm" onsubmit="event.preventDefault();">
+            <br>
+            <h2>Leave a review:</h2>
             <textarea id="itemReview" name="itemReview" rows="4" cols="50"></textarea><br>
-            <sub>What would you rate this item out of 5?<br>
-            <select name="rating" id="rating">
+            <sub><h3>What would you rate this item out of 5?</h3>
+            <div id="ratingLimiter" ></div>
+            <select name="rating" id="rating" class="form-control d-flex justify-content-center">
                 <option value="5">5/5</option>
                 <option value="4">4/5</option>
                 <option value="3">3/5</option>
                 <option value="2">2/5</option>
                 <option value="1">1/5</option>
             </select>
+            </div>
             </sub>
+            
             <input type='hidden' id='asin' name='asin' value=<%= asin %>>
             <input type='hidden' id='username' name='username' value=<%= username %>>
-            <br>
             <input class="btn btn-secondary" id="reviewSubmit" type="submit" value="Submit">
         </form>
         <section id="reviewscontainer">
@@ -41,7 +44,6 @@
             <br>
         </section>
         <input type="hidden" id="reviewsLoader" name='<%= asin %>'>
-        </main>
 
 <%- include('partials/footer.ejs') %>
 <script src="js/review.js"></script>

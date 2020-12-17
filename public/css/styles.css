@@ -34,6 +34,19 @@ h1 {
     font-family: 'Julius Sans One', sans-serif;
 }
 
+h2 {
+    color: #E78B4E;
+    font-size: 1em;
+    font-family: 'Julius Sans One', sans-serif;
+    
+}
+
+h3 {
+    color: black;
+    font-size: .7em;
+    font-family: 'Julius Sans One', sans-serif;
+}
+
 .eggImage {
     width: 100px;
 }
@@ -83,17 +96,24 @@ hr {
     border-radius: 20px;  
 }
 
-#listLimiter {
+#listLimiter  {
     display: flex;
     justify-content: center;
+    align-content: center;
     width: auto;
+}
+
+
+#rating {
+    width: 100px;
+    margin: 0 auto;
 }
 
 #resultsContainer{
   background-color: rgba(250,250,250,0.50);
   padding: 15px;
   border-radius: 25px;
-  margin:0 auto;
+  margin: 0 auto;
 }
 
 .link, .keywordLink {
@@ -158,4 +178,16 @@ hr {
 
 form{
     font-size:1.2em;
+}
+
+#warning {
+    border-radius: 25px;
+    border: 1px solid red;
+    width: 200px;
+    font-size: .6em;
+    margin: 5px;
+}
+
+#searchBarEmpty::placeholder {
+    color: red;
 }

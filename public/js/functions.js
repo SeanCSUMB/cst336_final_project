@@ -6,28 +6,14 @@ $(document).ready(function(){
     $(document).on('keypress',function(e) {
         
         if(e.which == 13 && $("#searchBar").val() != "") {
-            
             $("#searchButton").click();
-            
         }
         
         if(e.which == 13 && $("#itemReview").val() != "") {
-            
             $("#reviewSubmit").click();
         }
         
     });
-    
-    async function validateSearchForm() {
-        if ($("#searchBar").val() == "") {
-            $("#searchBar").css("border", "1px solid red");
-            //returnToPreviousPage();
-            return true;
-        } else {
-            $("#searchBar").css("border", "1px solid gray");
-            return false;
-        }
-    }
     
     //Populate all results when results page is loaded (page load clicks the resultsLoader button)
     $("#resultsLoader").on("click", async function(){
@@ -77,31 +63,38 @@ $(document).ready(function(){
     //When any .btn-secondary is clicked (which only exists below the review form)...
     $(".btn-secondary").on("click", async function() {
         
-        //Get the form data.
-        let params = $('form').serialize();
-        //Declare the variable in advance.
-        let response;
+        if ($("#itemReview").val().length < 3) {
+            $("#itemReview").css("border", "1px solid red");
+        } else {
         
-        //As long as there is data...
-        if (params) {
+            //Get the form data.
+            let params = $('form').serialize();
+            //Declare the variable in advance.
+            let response;
             
-            //Let the url be for an internal API, with the parameters passed.
-            let url = `/reviewAPI?` + params;
-            //Await the response.
-            response = await fetch(url);
-        
-        //End of if.
-        }
-        
-        //Since no rows are returned, the API returns OK if everything went smoothely. If the response is not "OK"...
-        if (response != "OK") {
+            //As long as there is data...
+            if (params) {
+                
+                //Let the url be for an internal API, with the parameters passed.
+                let url = `/reviewAPI?` + params;
+                //Await the response.
+                response = await fetch(url);
             
-            //Send the user to the login page (not being logged in is the only way to get a non-OK response)
-            window.location.assign("/login");
+            //End of if.
+            }
+            
+            //Since no rows are returned, the API returns OK if everything went smoothely. If the response is not "OK"...
+            if (response == "NotOK") {
+                
+                //Send the user to the login page (not being logged in is the only way to get a non-OK response)
+                window.location.assign("/login");
+            
+            //End of if.
+            } else {
+                window.location.reload(false); 
+            }
         
-        //End of if.
         }
-    
     //End of click event.    
     });
 

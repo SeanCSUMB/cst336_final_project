@@ -1,6 +1,19 @@
 <%- include('partials/header.ejs') %>
 
-<br><h2>Welcome, <%= welcomeName %>!</h2><br>
+<form id="searchForm" action='/search' class="d-flex justify-content-center">
+        
+        <br>
+        <% if ( emptySearch) { %>
+            <input class="input-group-text border-danger" id="searchBarEmpty" type="text" placeholder=" Try another search..." name="keyword"/>
+        <% } else { %>
+            <input class="input-group-text border-warning" id="searchBar" type="text" placeholder="Search for adventures..." name="keyword"/>    
+        <% } %>
+        <button id="searchButton" class="btn btn-warning">Embark</button>
+        <br><br>
+</form>
+
+<br>
+<h2><%= welcomeName %></h2><br>
 
 <%- include('partials/footer.ejs') %>
 <script src="js/index.js"></script>

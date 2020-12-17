@@ -17,7 +17,7 @@
               <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                   <li class="nav-item active">
-                    <a class="nav-link" href="/"><button class="btn btn-primary">Home</button><span class="sr-only"></span></a>
+                    <a class="nav-link" href="/"><button class="btn btn-primary">Search</button><span class="sr-only"></span></a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="/allReviews"><button class="btn btn-primary">Reviewed Items</button></a>
@@ -33,10 +33,6 @@
         <main id="container">
             <br>
             <banner id="banner"><h1>NewtEgg </h1><a href="/"><img class="eggImage" src="img/egg.png"></a></banner>
-            <form id="searchForm" action='/search' class="d-flex justify-content-center" onsubmit="if(invalidateSearchForm()){event.preventDefault();}">
-                    <input class="input-group-text" id="searchBar" type="text" placeholder="Search for adventures..." name="keyword"/>
-                    <button id="searchButton" class="btn btn-warning">Embark</button>
-                    <br><br>
-            </form>
+
 
             

@@ -21,7 +21,7 @@ app.use(express.urlencoded({extended: true}));
 
 //routes
 app.get("/", isAuthenticated, async function(req, res) {
-    res.render("index", {"welcomeName": req.session.userLogged});
+    res.render("index", {"welcomeName": "Welcome, " + req.session.userLogged + "!", "emptySearch": false});
 });
 
 //starting server
@@ -37,7 +37,7 @@ app.listen(process.env.PORT, process.env.IP, function() {
 app.get("/reviewAPI", async function(req, res) {
   
   //Set this to false to leave as many reviews as you like.
-  let debugOff = true;
+  let debugOff = false;
   
   //If a user is logged in...
   if (typeof(req.session.userLogged) != "undefined") {
@@ -219,14 +219,15 @@ app.get('/review', function (req, res) {
 app.get("/search", isAuthenticated, async function(req, res) {
     
     let keyword = "";
+    let searchFailed = false;
     if (req.query.keyword) {
         keyword = req.query.keyword;
     }
     
     if (keyword == "") {
-      keyword = "Other";
+      searchFailed = true;
     }
-    
+
     let keywordEncoded = encodeURIComponent(keyword.trim());
     
     let apiUrl = "https://amazon-product-reviews-keywords.p.rapidapi.com/product/search?keyword=outdoor" + "%20" + keywordEncoded + "&category=aps&country=US";
@@ -250,6 +251,10 @@ app.get("/search", isAuthenticated, async function(req, res) {
       numProducts = data.products.length;
     }
     
+    if (data.products.length == 0){
+      searchFailed = true;
+    }
+    
     let i = 0;
     
     for (let k= 0; k < numProducts; k++) {
@@ -266,7 +271,11 @@ app.get("/search", isAuthenticated, async function(req, res) {
       }
     }
     
-    res.render("results", {"keyword":keyword});
+    if (searchFailed) {
+      res.render("index", {"welcomeName": "", "emptySearch": true,});  
+    } else {
+      res.render("results", {"keyword":keyword});
+    }
 }); 
 
 //the main api for retrieving products from the database

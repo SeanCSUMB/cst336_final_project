@@ -1,8 +1,17 @@
 <%- include('partials/header.ejs') %>
+
+        <form id="searchForm" class="d-flex justify-content-center">
+                
+            <br>
+            <input class="input-group-text" id="searchBar" type="text" placeholder="Search for adventures..." name="keyword"/>    
+            <button id="searchButton" class="btn btn-warning">Embark</button>
+            <br><br>
+        </form>
         <br>
+        <h2>Search results for <%= keyword %></h2><br>
         <div id="listLimiter">
             <div id="resultscontainer">
-
+            
             </div>
             <input type="hidden" id="resultsLoader" name='<%= keyword %>'>
         </div>  
