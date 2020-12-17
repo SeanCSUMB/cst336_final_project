@@ -8,7 +8,7 @@ body {
             
 #container {
     position: relative;
-    min-height: 90vh;
+    min-height: 20vh;
 }
 
 main {
@@ -154,4 +154,8 @@ hr {
 
 #reviewSubmit {
     width: 100px;
+}
+
+form{
+    font-size:1.2em;
 }

@@ -1,12 +1,12 @@
 <%- include('partials/header.ejs') %>
-        Sign up here!
+        <h2>Sign up here!</h2>
         
         <form method="POST" action="/makeNewAccount">
-            Username:<input type="text" name="username">
+            <label for="username" class="d-flex justify-content-center">Username:&nbsp<input type="text" id="username" name="username"></label>
             <br>
-            Password: <input type="password" name="password">
+            <label for="password" class="d-flex justify-content-center">Password:&nbsp<input type="password" id="password" name="password"></label>
             <br>
-            Retype Password: <input type="password" name="retypePassword">
+            <label for="retypePassword" class="d-flex justify-content-center">Retype Password:&nbsp<input type="password" id="retypePassword" name="retypePassword"></label>
             <br>
             <button class="btn btn-primary">Sign up!</button>
         </form>

@@ -1,19 +1,22 @@
 <%- include('partials/header.ejs') %>
 
                 <% if (typeof emptyError != "undefined" && emptyError) { %>
-                    <h3 class="error">You must fill in all three fields to change your password!</h3>
+                    <h3 class="error">You must fill in all of the fields to do this action!</h3>
                 <% } %>
                 <% if (typeof notExistsError != "undefined" && notExistsError) { %>
                     <h3 class="error">The currently logged in user does not actually exist in our database!</h3>
                 <% } %><br>
                 <% if (typeof oldError != "undefined" && oldError) { %>
-                    <h3 class="error">You must correctly type your current password to change it!</h3>
+                    <h3 class="error">You must correctly type your current password!</h3>
                 <% } %>
                 <% if (typeof retypeErrorr != "undefined" && retypeError) { %>
                     <h3 class="error">New Password and Retype New Password must match!</h3>
                 <% } %>
                 <% if (typeof changeSuccess != "undefined" && changeSuccess) { %>
                     <h3 class="error">You have sucessfully changed your password!</h3>
+                <% } %>
+                <% if (typeof deleteSuccess != "undefined" && deleteSuccess) { %>
+                    <h3 class="error">You have sucessfully deleted your account!</h3>
                 <% } %><br>
                 <a href="/profile"><button class="btn btn-primary">Go back</button></a>
 

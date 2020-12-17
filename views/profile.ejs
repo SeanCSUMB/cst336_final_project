@@ -6,18 +6,24 @@
                 
             <a href="/logout"><button class="btn btn-primary">Logout</button></a>
                 
-            <hr><h3>Change Password:</h3><br><br>
+            <hr><b>Change Password:</b><br><br>
             <form method="POST" action="/changePassword">
-                <span class="d-flex justify-content-center">Current Password: &nbsp<input type="password" name="currentPassword" class="input-group-text"></span>
+                <label for="currentPassword" class="d-flex justify-content-center">Current Password: &nbsp<input type="password" id="currentPassword" name="currentPassword" class="input-group-text"></label>
                 <br>
-                <span class="d-flex justify-content-center">New Password: &nbsp<input type="password" name="newPassword" class="input-group-text"></span>
+                <label for="newPassword" class="d-flex justify-content-center">New Password: &nbsp<input type="password" id="newPassword" name="newPassword" class="input-group-text"></label>
                 <br>
-                <span class="d-flex justify-content-center">Retype New Password: &nbsp<input type="password" name="retypeNewPassword" class="input-group-text"></span>
+                <label for="retypeNewPassword" class="d-flex justify-content-center">Retype New Password: &nbsp<input type="password" id="retypeNewPassword" name="retypeNewPassword" class="input-group-text"></label>
                 <br>
                 <button class="btn btn-primary">Change Password!</button>
             </form>
+            
+            <hr><b>Delete Account:</b><br><br>
+            <form method="POST" action="/deleteAccount">
+                <label for="deletionPassword" class="d-flex justify-content-center">Current Password:&nbsp<input type="password" id="deletionPassword" name="deletionPassword" class="input-group-text"></label>
+                <button class="btn btn-danger">Delete Account!</button>
+            </form>
         </section>
-        <br>
+        <hr><br>
         <h3>Reviewed Products</h3>
         <section id="listContainer">
             <%

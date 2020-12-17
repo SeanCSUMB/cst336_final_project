@@ -6,6 +6,7 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const mysql = require('mysql');
+const deletedUserId = 9;
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -36,26 +37,22 @@ app.listen(process.env.PORT, process.env.IP, function() {
 app.get("/reviewAPI", async function(req, res) {
   
   //Set this to false to leave as many reviews as you like.
-  let debugOff = false;
-  
-  //Debug
-  console.log("Review API says user logged in is " + req.session.userLogged);
-  console.log("Review API says is authenticated is " + (typeof(req.session.userLogged) != "undefined"));
+  let debugOff = true;
   
   //If a user is logged in...
   if (typeof(req.session.userLogged) != "undefined") {
-  
-    //Debug
-    console.log("Review API says " + req.query.id);
-    console.log("Review API says " + req.query.asin);
     
-    let id = req.query.id;
+    //All of these will always return something if the above condition is true, so there is no need to check. Even if the user leaves no text in the box, they should be allowed to rate the item 5 stars if they choose.
     let asin = req.param('asin');
     let username = req.query.username;
+    let review = req.query.itemReview;
+    let rating = req.query.rating;
     
-    //Get all of the reviews from this user.
-    let sql = "SELECT * FROM reviews WHERE users_userID = (SELECT userID from users WHERE username = ?)";
-    let params = [username];
+    //Get all of the reviews from this user for this item.
+    let sql = "SELECT * FROM reviews WHERE users_userID = (SELECT userID from users WHERE username = ?) AND products_ASIN = ?";
+    //Parameters for parameterized query.
+    let params = [username, asin];
+    //Format the query.
     sql = mysql.format(sql, params);
     //Query the database.
     pool.query(sql, function(err, rows, fields) {
@@ -64,10 +61,10 @@ app.get("/reviewAPI", async function(req, res) {
       if (err) throw err;
       
       //If the select statement returned anything and debug mode is off...
-      if (rows && debugOff) {
+      if (rows.length > 0 && debugOff) {
         
         //Log that the user already left a review.
-        console.log("Already left review...");
+        console.log("Already left review... ");
         
       //End of if.
       }
@@ -79,8 +76,10 @@ app.get("/reviewAPI", async function(req, res) {
         console.log("Attempted to leave review! Text is " + req.query.itemReview);
   
         //Insert the review information into the reviews table.
-        sql = "INSERT INTO reviews (idreviews, reviewText, products_productID, users_userID, products_ASIN, rating) VALUES (DEFAULT, ?, ?, (SELECT userID from users WHERE users.username = ?), ?, ?)";
-        params = [req.query.itemReview, id, username, asin, req.query.rating];
+        sql = "INSERT INTO reviews (idreviews, reviewText, users_userID, products_ASIN, rating) VALUES (DEFAULT, ?, (SELECT userID from users WHERE users.username = ?), ?, ?)";
+        //Parameters for parameterized query.
+        params = [review, username, asin, rating];
+        //Format the query.
         sql = mysql.format(sql, params);
         //Query the database.
         pool.query(sql, function(err, rows) {
@@ -101,10 +100,13 @@ app.get("/reviewAPI", async function(req, res) {
   //End of if.
   }
   
+  //Otherwise (if the user is not logged in)...
   else {
     
+    //Send an appropriate response.
     res.send("NotOK");
     
+  //End of else.
   }
 
 //End of this API.
@@ -121,8 +123,6 @@ app.get("/allReviews", isAuthenticated, function(req, res) {
   
     //Throw an error if there is an error.
     if (err) throw err;
-    //Print the returned rows to the console.
-    console.log(rows);
     //Then render the allReviews page with the returned rows.
     res.render("allReviews", {"rows" : rows});
   
@@ -135,25 +135,7 @@ app.get("/allReviews", isAuthenticated, function(req, res) {
 //Route for an individual product's review page.
 app.get('/review', function (req, res) {
   
-  //Debug.
-  console.log("User logged in is " + req.session.userLogged);
-  console.log("Is authenticated is " + (typeof(req.session.userLogged) != "undefined"));
-  
-  //Set id and ASIN.
-  let id = "";
-  if (req.query.id) {
-     
-      id = req.query.id;
-     
-  }
-   
-  if (id == "") {
-     
-      //or other dummy value
-      id = -1;
-     
-  }
-  
+  //Set ASIN.
   let asin = "";
   if (req.param('asin')) {
     
@@ -169,20 +151,17 @@ app.get('/review', function (req, res) {
      
   }
   
-  //Debug
-  console.log("id is " + id + " and asin is " + asin);
-  
   //Select everything from the users joined with the reviews of the products with this ASIN.
   let sql = "SELECT * FROM users RIGHT OUTER JOIN reviews ON users.userID = reviews.users_userID WHERE reviews.products_ASIN = ?";
+  //Parameters for parameterized query.
   let params = [asin];
+  //Format the query.
   sql = mysql.format(sql, params);
   //Query the database.
   pool.query(sql, function(err, rows, fields) {
     
     //If there is an error, throw one.
     if (err) throw err;
-    //Log the returned rows.
-    console.log(rows);
     //Log whether something was returned or not.
     console.log(Object.keys(rows).length === 0);
     
@@ -190,7 +169,7 @@ app.get('/review', function (req, res) {
     if (Object.keys(rows).length === 0) {
       
       //Render the review page with a rows that does nothing and everything else as appropriate.
-      res.render("review", {"rows" : "It looks like there are no reviews for this product yet.", "id" : id, "asin" : asin, "username" : req.session.userLogged});
+      res.render("review", {"rows" : "It looks like there are no reviews for this product yet.", "asin" : asin, "username" : req.session.userLogged});
       
     //End of if.
     }
@@ -199,7 +178,7 @@ app.get('/review', function (req, res) {
     else {
       
       //Render the review page with all of those reviews and everything else as appropriate.
-      res.render("review", {"rows" : rows, "id" : id, "asin" : asin, "username" : req.session.userLogged});
+      res.render("review", {"rows" : rows, "asin" : asin, "username" : req.session.userLogged});
      
     //End of else. 
     }
@@ -209,319 +188,6 @@ app.get('/review', function (req, res) {
     
 //End of route.
 });
-
-//Route for when a user leaves a new review.
-/*app.get("/newReview", function(req, res) {
-  
-  //Set this to false to leave as many reviews as you like.
-  let debugOff = false;
-  
-  //Debug
-  console.log("User logged in is " + req.session.userLogged);
-  console.log("Is authenticated is " + (typeof(req.session.userLogged) != "undefined"));
-  
-  //If a user is logged in...
-  if (typeof(req.session.userLogged) != "undefined") {
-  
-    //Debug
-    console.log(req.query.id);
-    console.log(req.query.asin);
-    
-    //Set id, asin, and username.
-    let id = "";
-    if (req.query.id) {
-     
-        id = req.query.id;
-     
-    }
-   
-    if (id == "") {
-     
-        //or other dummy value
-        id = -1;
-     
-    }
-    
-    let asin = "";
-    if (req.param('asin')) {
-    
-      asin = req.param('asin');
-    
-    }
-  
-    //If the user is reviewing a product with no ASIN (which should never happen)...
-    if (asin == "") {
-     
-      //Redirect them.
-      res.redirect("allReviews");
-     
-    }
-    
-    let username = "";
-    if (req.query.username) {
-     
-        username = req.query.username;
-     
-    }
-   
-    //If there is no username (which should never happen)...
-    if (username == "") {
-     
-        //Put in a dummy value.
-        username = "johndoe";
-     
-    }
-    
-    //Get all of the reviews from this user.
-    let sql = "SELECT * FROM reviews WHERE users_userID = (SELECT userID from users WHERE username = '" + username + "')";
-    //Query the database.
-    pool.query(sql, function(err, rows, fields) {
-    
-      //If there was an error, throw one.
-      if (err) throw err;
-      
-      //If the select statement returned anything and debug mode is off...
-      if (rows && debugOff) {
-        
-        //Log that the user already left a review.
-        console.log("Already left review...");
-        
-      //End of if.
-      }
-      
-      //Otherwise...
-      else {
-        
-        //Log that the user attempted to leave a review.
-        console.log("Attempted to leave review! Text is " + req.query.itemReview);
-  
-        //Insert the review information into the reviews table.
-        sql = "INSERT INTO reviews (idreviews, helpfulVotes, unhelpfulVotes, reviewText, products_productID, users_userID, products_ASIN, rating) VALUES (DEFAULT, 0, 0, '" + req.query.itemReview + "', " + id + ", (SELECT userID from users WHERE users.username = '" + username + "'), '" + asin + "', " + req.query.rating + ")";
-        //Query the database.
-        pool.query(sql, function(err) {
-    
-          //If there is an error, throw one.
-          if (err) throw err;
-    
-        //End of query.
-        });
-        
-      //End of else.  
-      }
-      
-      //Redirect the user.
-      res.redirect("/review?asin=" + asin);
-    
-    //End of query.
-    });
-  
-  //End of if.
-  }
-  
-  //Otherwise (that is, if there is no user logged in)...
-  else {
-    
-    //Rebder the login page.
-    res.render("login");
-    
-  //End of else.
-  }
-  
-//End of route.
-});*/
-
-//Can be removed once the other version is double checked.
-/*app.get("/helpful", function(req, res) {
-  
-  console.log("ID is " + req.param('id'));
-  console.log("ASIN is " + req.param('asin'));
-  let id = "";
-  if (req.param('id')) {
-    
-    id = req.param('id');
-    
-  }
-  
-  if (id == "") {
-     
-      //Don't actually return, the page will be stuck in limbo. Just render the previous page.
-      return;
-     
-  }
-  
-  let asin = "";
-  if (req.param('asin')) {
-    
-    asin = req.param('asin');
-    
-  }
-  
-  if (asin == "") {
-     
-      //Don't actually return, the page will be stuck in limbo. Just render the previous page.
-      return;
-     
-  }
-  
-  console.log("Before main process...");
-  
-  //Debugging...
-  if (typeof(req.session.userLogged) != "undefined" && !req.session.votedItems.includes(id)) {
-    
-    console.log("In if...");
-    let sql = "UPDATE reviews SET helpfulVotes = helpfulVotes + 1 WHERE reviews.idreviews = " + id;
-    pool.query(sql, function(err) {
-    
-      if (err) throw err;
-    
-    });
-    
-    req.session.votedItems.push(id);
-    
-  }
-  
-  res.redirect("/review?asin=" + asin);
-  
-});
-
-//I am unsure whethere we need a whole route for this.
-app.get("/unhelpful", function(req, res) {
-  
-  console.log("ID is " + req.param('id'));
-  console.log("ASIN is " + req.param('asin'));
-  let id = "";
-  if (req.param('id')) {
-    
-    id = req.param('id');
-    
-  }
-  
-  if (id == "") {
-     
-      //Don't actually return, the page will be stuck in limbo. Just render the previous page.
-      return;
-     
-  }
-  
-  let asin = "";
-  if (req.param('asin')) {
-    
-    asin = req.param('asin');
-    
-  }
-  
-  if (asin == "") {
-     
-      //Don't actually return, the page will be stuck in limbo. Just render the previous page.
-      return;
-     
-  }
-  
-  if (typeof(req.session.userLogged) != "undefined" && !req.session.votedItems.includes(id)) {
-    
-    let sql = "UPDATE reviews SET unhelpfulVotes = unhelpfulVotes + 1 WHERE reviews.idreviews = " + id;
-    pool.query(sql, function(err) {
-    
-      if (err) throw err;
-    
-    });
-    
-    req.session.votedItems.push(id);
-    
-    res.redirect("/review?asin=" + asin);
-  
-  }
-  
-  else {
-    
-    res.redirect("/review?asin=" + asin);
-    //res.render("login");
-    
-  }
-  
-});*/
-
-//Internal API...
-/*app.get("/voteapi", async function(req, res) {
-  
-  //A vairable for the SQL.
-  let sql;
-  
-  //Switch on whether the user voted helpful or unhelpful.
-  switch (req.query.vote) {
-    
-    //If they voted helpful...
-    case "helpful":
-      
-      //Switch on whether they are adding or removing their vote...
-      switch (req.query.action) {
-        
-        //If they are adding one...
-        case "add":
-          
-          //Update the SQL accordingly.
-          sql = "UPDATE reviews SET helpfulVotes = helpfulVotes + 1 WHERE reviews.idreviews = " + req.query.id;
-          //And break.
-          break;
-          
-        //If they are removing one...
-        case "remove":
-          
-          //Update the SQL accordingly.
-          sql = "UPDATE reviews SET helpfulVotes = helpfulVotes - 1 WHERE reviews.idreviews = " + req.query.id;
-          //And break.
-          break;
-      
-      //End of switch.
-      }
-      
-      //And break.
-      break;
-      
-    //If they voted unhelpful...
-    case "unhelpful":
-      
-      //Switch on whether they are adding or removing their vote...
-      switch (req.query.action) {
-        
-        //If they are adding one...
-        case "add":
-          
-          //Update the SQL accordingly.
-          sql = "UPDATE reviews SET unhelpfulVotes = unhelpfulVotes + 1 WHERE reviews.idreviews = " + req.query.id;
-          //And break.
-          break;
-          
-        //If they are removing one...
-        case "remove":
-          
-          //Update the SQL accordingly.
-          sql = "UPDATE reviews SET unhelpfulVotes = unhelpfulVotes - 1 WHERE reviews.idreviews = " + req.query.id;
-          //And break.
-          break;
-      
-      //End of switch.
-      }
-      
-      //And break.
-      break;
-      
-  //End of switch.
-  }
-  
-  //Query the database.
-  pool.query(sql, function (err, rows, fields) {
-    
-    //If there is an error, throw one.
-    if (err) throw err;
-    //Send the affected rows back as a string.
-    res.send(rows.affectedRows.toString());
-    
-  //End of query.
-  });
-
-//End of this API.
-});*/
 
 //////////////// Products code //////////////////
 
@@ -627,7 +293,7 @@ app.get("/api/getItems", function(req, res){
   
 });//api/getFavorites
 
-//////////////// Login Page code //////////////////
+//////////////// Login, Signup, and Account code //////////////////
 
 // use req.session.userLogged to find the currently logged in user
 // the middleware isAuthenticated (i.e. app.get("/page", isAuthenticated, function(req, res){}); ) can check if a user is logged in
@@ -798,6 +464,56 @@ app.post("/changePassword", async function(req, res){
         console.log(rows);
   });
   res.render("passResult", {"changeSuccess":true});
+});
+
+//to delete your account
+app.post("/deleteAccount", async function(req, res){
+    let username = req.session.userLogged;
+    let password = req.body.deletionPassword;
+    
+    if(username == "" || password == ""){
+        res.render("passResult", {"emptyError":true});
+        return;
+    }
+    
+    let result = await checkUsername(username);
+    console.dir(result);
+    if (result.length <= 0){
+      //the currently logged in user is not in the datbase
+        res.render("passResult", {"notExistsError":true});
+        return;
+    }
+    let hashedPwd = result[0].password;
+    let passwordMatch = await checkPassword(password, hashedPwd);
+    console.log("passwordMatch:" + passwordMatch);
+    
+    if (!passwordMatch) {
+      //current password does not match the one on the database
+      res.render("passResult", {"oldError":true});
+      return;
+    }
+    
+    let userId = result[0].userID;
+    
+    //delete the user from the database
+    let sql = "DELETE FROM users WHERE userID = ?";
+    let sqlParams = [userId];
+    
+    await pool.query(sql, sqlParams, function (err, rows, fields) {
+        if (err) throw err;
+  });
+    //update the user's reviews to be from the user (deleted user); this ID is a constant that should be set to match the ID of (deleted user) in the database
+    sql = "UPDATE reviews SET users_userID = ? WHERE users_userID = ?";
+    sqlParams = [deletedUserId, userId];
+    
+    await pool.query(sql, sqlParams, function (err, rows, fields) {
+        if (err) throw err;
+        console.log(rows);
+  });
+  
+  //force the user to log out and then show them the successful result page
+  req.session.destroy();  
+  res.render("passResult", {"deleteSuccess":true});
 });
 
 //destroy the current session if the user logs out    

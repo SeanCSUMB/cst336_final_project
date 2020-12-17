@@ -4,13 +4,18 @@
 $(document).ready(function(){
     
     $(document).on('keypress',function(e) {
+        
         if(e.which == 13) {
+            
             $("#searchButton").click();
+            
         }
+        
     });
     
     //Populate all results when results page is loaded (page load clicks the resultsLoader button)
     $("#resultsLoader").on("click", async function(){
+        
         let keyword = $("#resultsLoader").attr('name');
         
         let response = await  fetch(`/api/getItems?action=keyword&keyword=${keyword}&showReviewButton=true`);
@@ -22,6 +27,7 @@ $(document).ready(function(){
     
     //Populate all results when results page is loaded (page load clicks the resultsLoader button)
     $("#asin").on("click", async function(){
+        
         let asin = $("#asin").val();
         
         let response = await  fetch(`/api/getItems?action=asin&asin=${asin}&showReviewButton=false`);
@@ -52,86 +58,35 @@ $(document).ready(function(){
         
     });
     
-    $(".helpful").on("click", async function() {
-        
-        //This is where voting verification goes.
-        let id = $(this).prev().attr("id");
-        
-        if ($(this).attr("src") == 'img/helpfulEmpty.png'){             
-        
-            $(this).attr("src","img/helpfulFull.png");
-            let url = `/voteapi?vote=helpful&id=${id}&action=add`;
-            console.log(url);
-            await fetch(url);
-        
-            
-        }
-        
-        else {
-            
-            $(this).attr("src","img/helpfulEmpty.png");
-            let url = `/voteapi?vote=helpful&id=${id}&action=remove`;
-            await fetch(url);
-            
-        }
-        
-        window.location.reload();
-        
-    });
-    
-    $(".unhelpful").on("click", async function() {
-        
-        //This is where voting verification goes.
-        let id = $(this).prev().attr("id");
-        
-        if ($(this).attr("src") == 'img/unhelpfulEmpty.png'){             
-        
-            $(this).attr("src","img/unhelpfulFull.png");
-            let url = `/voteapi?vote=unhelpful&id=${id}&action=add`;
-            await fetch(url);
-        
-            
-        }
-        
-        else {
-            
-            $(this).attr("src","img/unhelpfulEmpty.png");
-            let url = `/voteapi?vote=unhelpful&id=${id}&action=remove`;
-            await fetch(url);
-            
-        }
-        
-        window.location.reload();
-        
-    });
-    
+    //When any .btn-secondary is clicked (which only exists below the review form)...
     $(".btn-secondary").on("click", async function() {
         
+        //Get the form data.
         let params = $('form').serialize();
+        //Declare the variable in advance.
         let response;
         
+        //As long as there is data...
         if (params) {
             
+            //Let the url be for an internal API, with the parameters passed.
             let url = `/reviewAPI?` + params;
+            //Await the response.
             response = await fetch(url);
-            
+        
+        //End of if.
         }
         
+        //Since no rows are returned, the API returns OK if everything went smoothely. If the response is not OK...
         if (response != "OK") {
             
+            //Send the user to the login page (not being logged in is the only way to get a non-OK response)
             window.location.assign("/login");
-            
-        }
         
-        else {
-            
-            //Does not do what I want. The most recently left review does not get shown.
-            window.location.reload(true);
-            
+        //End of if.
         }
-        
+    
+    //End of click event.    
     });
 
 });
-
-

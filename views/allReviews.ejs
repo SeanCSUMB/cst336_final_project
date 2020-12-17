@@ -1,5 +1,5 @@
 <%- include('partials/header.ejs') %>
-        <div id="listContainer">
+        <section id="listContainer">
             <br>
             <%
                 if (Array.isArray(rows)) {
@@ -10,7 +10,7 @@
                         </div>
                 
             <% });}%>
-        </div>
+        </section>
         <input type="hidden" id="productsLoader" name="productsLoader">
     </main>
 

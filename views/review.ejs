@@ -1,10 +1,10 @@
 <%- include('partials/header.ejs') %>
         
         <br>
-        <div id="listLimiter">
+        <section id="listLimiter">
             <div id="reviewProductListing"></div>
-        </div>
-        <!--add in action="/newReview-->
+        </section>
+        <!--Pressing enter sends a search, it does not submit the form.-->
         <form id="reviewForm">
             <lable>Leave a review:</lable><br>
             <textarea id="itemReview" name="itemReview" rows="4" cols="50"></textarea><br>
@@ -18,14 +18,12 @@
             </select>
             </sub>
             <input type='hidden' id='asin' name='asin' value=<%= asin %>>
-            <input type='hidden' id='id' name='id' value=<%= id %>>
             <input type='hidden' id='username' name='username' value=<%= username %>>
             <br>
-            <input class="btn-secondary" id="reviewSubmit" type="submit" value="Submit">
+            <input class="btn btn-secondary" id="reviewSubmit" type="submit" value="Submit">
         </form>
-        <div id="reviewscontainer">
+        <section id="reviewscontainer">
             <br>
-            <!-- https://f008b3cbfacd420894540fb237124148.vfs.cloud9.us-west-1.amazonaws.com/review?id=79 has two reviews.-->
             <%
                 if (Array.isArray(rows)) {
                     rows.forEach(function(row, i) { %>
@@ -42,7 +40,7 @@
                 
             <% });}%>
             <br>
-        </div>
+        </section>
         <input type="hidden" id="reviewsLoader" name='<%= asin %>'>
         </main>
 
