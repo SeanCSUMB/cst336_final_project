@@ -310,7 +310,6 @@ app.get("/api/getItems", function(req, res){
       
       if (req.query.showReviewButton == "true") {
           //I (James) added in this form that appears as a button which the user can click to leave review. It passes the item ASIN.
-          //Josh swapped out "row.asin.slice(0,-2)" for "row.asin" as the former was somehow chopping off the end of the asin.
           htmlString += "<form id='goReview' action='/review'><input type='hidden' id='asin' name='asin' value='" + row.asin + "'/><button id='reviewButton' class='btn btn-primary'>See Reviews</button></form>";
       }
       
