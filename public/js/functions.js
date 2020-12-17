@@ -63,9 +63,17 @@ $(document).ready(function(){
     //When any .btn-secondary is clicked (which only exists below the review form)...
     $(".btn-secondary").on("click", async function() {
         
+        //If the item review is too short...
         if ($("#itemReview").val().length < 3) {
+            
+            //Set the border color to red.
             $("#itemReview").css("border", "1px solid red");
-        } else {
+            
+        //End of if.    
+        }
+        
+        //Otherwise...
+        else {
         
             //Get the form data.
             let params = $('form').serialize();
@@ -90,11 +98,20 @@ $(document).ready(function(){
                 window.location.assign("/login");
             
             //End of if.
-            } else {
-                window.location.reload(false); 
+            }
+            
+            //Otherwise...
+            else {
+                
+                //Reload the page.
+                window.location.reload(false);
+                
+            //End of else.    
             }
         
+        //End of else.
         }
+        
     //End of click event.    
     });
 
