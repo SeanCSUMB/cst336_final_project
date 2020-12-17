@@ -33,7 +33,7 @@
         <main id="container">
             <br>
             <banner id="banner"><h1>NewtEgg </h1><a href="/"><img class="eggImage" src="img/egg.png"></a></banner>
-            <form id="searchForm" action='/search' class="d-flex justify-content-center">
+            <form id="searchForm" action='/search' class="d-flex justify-content-center" onsubmit="if(invalidateSearchForm()){event.preventDefault();}">
                     <input class="input-group-text" id="searchBar" type="text" placeholder="Search for adventures..." name="keyword"/>
                     <button id="searchButton" class="btn btn-warning">Embark</button>
                     <br><br>

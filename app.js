@@ -133,7 +133,7 @@ app.get("/reviewAPI", async function(req, res) {
 });
 
 //Route for the page that contains all reviewed products.
-app.get("/allReviews", function(req, res) {
+app.get("/allReviews", isAuthenticated, function(req, res) {
   
   //Select all distinct products ASINs from the reviews table.
   let sql = "SELECT DISTINCT products_ASIN FROM reviews";
@@ -173,7 +173,7 @@ app.get('/review', function (req, res) {
       //Redirect them.
       res.redirect("allReviews");
   
-  //End of if.   
+  //End of   
   }
   
   //Select everything from the users joined with the reviews of the products with this ASIN.
@@ -216,7 +216,7 @@ app.get('/review', function (req, res) {
 
 //////////////// Products code //////////////////
 
-app.get("/search", async function(req, res) {
+app.get("/search", isAuthenticated, async function(req, res) {
     
     let keyword = "";
     if (req.query.keyword) {

@@ -21,11 +21,11 @@ $(document).ready(function(){
     async function validateSearchForm() {
         if ($("#searchBar").val() == "") {
             $("#searchBar").css("border", "1px solid red");
-            returnToPreviousPage();
-            return false;
+            //returnToPreviousPage();
+            return true;
         } else {
             $("#searchBar").css("border", "1px solid gray");
-            return true;
+            return false;
         }
     }
     
@@ -93,7 +93,7 @@ $(document).ready(function(){
         //End of if.
         }
         
-        //Since no rows are returned, the API returns OK if everything went smoothely. If the response is not OK...
+        //Since no rows are returned, the API returns OK if everything went smoothely. If the response is not "OK"...
         if (response != "OK") {
             
             //Send the user to the login page (not being logged in is the only way to get a non-OK response)
